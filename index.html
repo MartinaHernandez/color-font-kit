@@ -1,0 +1,1480 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Aesthetic Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ui-bg: #f9fafb;
+      --ui-surface: #ffffff;
+      --ui-border: #e5e7eb;
+      --ui-text: #111827;
+      --ui-muted: #6b7280;
+      --ui-accent: #6366f1;
+      --ui-accent-strong: #4f46e5;
+      --ui-danger: #dc2626;
+      --ui-danger-strong: #b91c1c;
+      --ui-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 10px;
+      --preview-neutral-bg: #f3f4f6;
+      --transition-fast: 180ms ease;
+      --transition-base: 220ms ease;
+      --page-max-width: 1120px;
+    }
+
+    html.theme-dark {
+      --ui-bg: #1e1e1e;
+      --ui-surface: #262626;
+      --ui-border: #3f3f46;
+      --ui-text: #f4f4f5;
+      --ui-muted: #a1a1aa;
+      --ui-accent: #818cf8;
+      --ui-accent-strong: #6366f1;
+      --ui-danger: #ef4444;
+      --ui-danger-strong: #dc2626;
+      --ui-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+      /* Keep preview background neutral across themes so generated aesthetics stay central. */
+      --preview-neutral-bg: #f3f4f6;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Source Sans 3", "Roboto", sans-serif;
+      background: var(--ui-bg);
+      color: var(--ui-text);
+      line-height: 1.5;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    button,
+    .tag,
+    .preset-chip {
+      font-family: "Inter", sans-serif;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -100%;
+      left: 1rem;
+      background: var(--ui-accent-strong);
+      color: #ffffff;
+      padding: 0.6rem 0.8rem;
+      border-radius: var(--radius-sm);
+      z-index: 1000;
+      text-decoration: none;
+    }
+
+    .skip-link:focus {
+      top: 1rem;
+    }
+
+    .page-wrap {
+      max-width: var(--page-max-width);
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .app-header h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+      letter-spacing: -0.02em;
+    }
+
+    .app-header p {
+      margin: 0.25rem 0 0;
+      color: var(--ui-muted);
+      font-size: 0.98rem;
+    }
+
+    .theme-toggle {
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface);
+      color: var(--ui-text);
+      border-radius: 999px;
+      padding: 0.5rem 0.95rem;
+      cursor: pointer;
+      transition: background-color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-1px);
+    }
+
+    .app-main {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--ui-surface);
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--ui-shadow);
+      padding: 1rem;
+    }
+
+    .controls-card,
+    .favorites-card {
+      grid-column: 1 / -1;
+    }
+
+    .palette-card {
+      grid-column: 1 / 8;
+    }
+
+    .fonts-card {
+      grid-column: 8 / -1;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 1.08rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .tag {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--ui-accent-strong);
+      background: color-mix(in srgb, var(--ui-accent) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--ui-accent) 35%, transparent);
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .controls-stack {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .controls-row,
+    .preset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .mode-row {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .mode-hint {
+      margin: 0;
+      color: var(--ui-muted);
+      font-size: 0.88rem;
+    }
+
+    .mode-colors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .mode-color-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border: 1px solid var(--ui-border);
+      border-radius: 999px;
+      padding: 0.2rem 0.5rem;
+      color: var(--ui-muted);
+      font-size: 0.8rem;
+      background: color-mix(in srgb, var(--ui-surface) 95%, transparent);
+    }
+
+    .mode-color-dot {
+      width: 0.72rem;
+      height: 0.72rem;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      background: var(--dot-color);
+    }
+
+    html.theme-dark .mode-color-dot[data-color="#FFFFFF"] {
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn,
+    .preset-chip {
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface);
+      color: var(--ui-text);
+      padding: 0.56rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.92rem;
+      cursor: pointer;
+      transition: transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .btn:hover,
+    .preset-chip:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--ui-accent);
+      color: #ffffff;
+      border-color: var(--ui-accent);
+    }
+
+    .btn-primary:hover {
+      background: var(--ui-accent-strong);
+      border-color: var(--ui-accent-strong);
+    }
+
+    .preset-chip.active {
+      border-color: var(--ui-accent);
+      color: var(--ui-accent-strong);
+      background: color-mix(in srgb, var(--ui-accent) 12%, transparent);
+    }
+
+    .status {
+      margin: 0;
+      min-height: 1.3rem;
+      color: var(--ui-muted);
+      font-size: 0.92rem;
+    }
+
+    .palette-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .swatch {
+      flex: 1 1 128px;
+      min-width: 120px;
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--ui-surface);
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+      animation: fade-slide var(--transition-base);
+    }
+
+    .swatch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    }
+
+    .swatch-color {
+      display: block;
+      height: 76px;
+      background: var(--swatch-color);
+    }
+
+    .swatch-info {
+      padding: 0.6rem 0.65rem;
+      display: grid;
+      gap: 0.45rem;
+      color: var(--ui-text);
+    }
+
+    .swatch-hex {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.86rem;
+      letter-spacing: 0.03em;
+      font-weight: 700;
+    }
+
+    .swatch-copy {
+      color: var(--ui-muted);
+      font-size: 0.8rem;
+    }
+    .contrast-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.15rem 0.45rem;
+      font-size: 0.72rem;
+      border: 1px solid;
+      letter-spacing: 0.01em;
+    }
+
+    .badge.pass {
+      color: #166534;
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    .badge.fail {
+      color: #991b1b;
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
+    .font-meta {
+      margin: 0 0 0.9rem;
+      color: var(--ui-muted);
+      font-size: 0.92rem;
+    }
+
+    .font-meta strong {
+      color: var(--ui-text);
+      font-weight: 600;
+    }
+
+    .preview {
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-md);
+      background: var(--preview-neutral-bg);
+      padding: clamp(0.8rem, 2vw, 1.1rem);
+      transition: border-color var(--transition-base), transform var(--transition-base), opacity var(--transition-base);
+    }
+
+    .preview.refresh {
+      animation: fade-slide var(--transition-base);
+    }
+
+    .preview-kicker {
+      margin: 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      font-weight: 700;
+    }
+
+    .preview h3 {
+      margin: 0.35rem 0 0.2rem;
+      font-size: clamp(1.35rem, 3.4vw, 1.95rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+
+    .preview h4 {
+      margin: 0;
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      line-height: 1.28;
+      font-weight: 600;
+    }
+
+    .preview p {
+      margin: 0.7rem 0 0;
+      font-size: 1rem;
+      max-width: 62ch;
+    }
+
+    .preview .sample-button {
+      margin-top: 0.9rem;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 0.52rem 0.95rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform var(--transition-fast), filter var(--transition-fast);
+    }
+
+    .preview .sample-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .favorites-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .favorite-item {
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-md);
+      padding: 0.7rem;
+      display: grid;
+      gap: 0.55rem;
+      background: color-mix(in srgb, var(--ui-surface) 94%, transparent);
+      animation: fade-slide var(--transition-base);
+    }
+
+    .favorite-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .favorite-name {
+      margin: 0;
+      font-family: "Inter", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .favorite-meta {
+      margin: 0;
+      color: var(--ui-muted);
+      font-size: 0.84rem;
+    }
+
+    .mini-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    .mini-swatches span {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    .favorite-actions {
+      display: flex;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .favorite-actions .btn {
+      padding: 0.38rem 0.7rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger {
+      color: #ffffff;
+      background: var(--ui-danger);
+      border-color: var(--ui-danger);
+    }
+
+    .btn-danger:hover {
+      background: var(--ui-danger-strong);
+      border-color: var(--ui-danger-strong);
+    }
+    .muted {
+      margin: 0;
+      color: var(--ui-muted);
+      font-size: 0.9rem;
+    }
+
+    .app-footer {
+      margin-top: 1rem;
+      color: var(--ui-muted);
+      font-size: 0.84rem;
+      text-align: center;
+    }
+
+    button:focus-visible,
+    .swatch:focus-visible,
+    a:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--ui-accent) 70%, white 30%);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 960px) {
+      .palette-card,
+      .fonts-card {
+        grid-column: 1 / -1;
+      }
+
+      .app-header {
+        align-items: center;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page-wrap {
+        padding: 0.75rem;
+      }
+
+      .app-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .theme-toggle {
+        align-self: flex-start;
+      }
+
+      .btn,
+      .preset-chip {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    @keyframes fade-slide {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <div class="page-wrap">
+    <header class="app-header" role="banner">
+      <div>
+        <h1>Random Aesthetic Generator</h1>
+        <p>Generate cohesive color palettes and Google Font pairings.</p>
+      </div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">Use Dark Mode</button>
+    </header>
+
+    <main id="main-content" class="app-main">
+      <section class="card controls-card" aria-labelledby="controls-title">
+        <h2 id="controls-title">Controls</h2>
+        <div class="controls-stack">
+          <div class="controls-row" role="group" aria-label="Primary controls">
+            <button id="shuffle-btn" class="btn btn-primary" type="button">Shuffle</button>
+            <button id="save-btn" class="btn" type="button">Save</button>
+            <button id="copy-css-btn" class="btn" type="button">Copy CSS</button>
+            <button id="export-json-btn" class="btn" type="button">Export JSON</button>
+          </div>
+
+          <div class="preset-row" role="group" aria-label="Curated defaults">
+            <button class="preset-chip" type="button" data-preset="Minimal">Minimal</button>
+            <button class="preset-chip" type="button" data-preset="Playful">Playful</button>
+            <button class="preset-chip" type="button" data-preset="Bold">Bold</button>
+          </div>
+
+          <div class="mode-row" role="group" aria-label="Kiewit palette mode">
+            <button id="kiewit-mode-btn" class="preset-chip" type="button" aria-pressed="false">Kiewit Palette Mode: Off</button>
+            <p class="mode-hint">Shuffle keeps the primaries below and randomizes only accent colors.</p>
+            <div class="mode-colors" aria-label="Kiewit primary colors">
+              <span class="mode-color-chip" title="Pantone 116C | CMYK 0/19/94/0 | RGB 255/210/0"><span class="mode-color-dot" data-color="#FFD200" style="--dot-color:#FFD200" aria-hidden="true"></span>Kiewit Yellow (Pantone 116C) #FFD200</span>
+              <span class="mode-color-chip" title="CMYK 60/40/40/100 | RGB 0/0/0"><span class="mode-color-dot" data-color="#000000" style="--dot-color:#000000" aria-hidden="true"></span>Process Black #000000</span>
+              <span class="mode-color-chip" title="CMYK 0/0/0/0 | RGB 255/255/255"><span class="mode-color-dot" data-color="#FFFFFF" style="--dot-color:#FFFFFF" aria-hidden="true"></span>White #FFFFFF</span>
+            </div>
+          </div>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="card palette-card" aria-labelledby="palette-title">
+        <div class="card-head">
+          <h2 id="palette-title">Palette</h2>
+          <p id="palette-name" class="tag">Minimal</p>
+        </div>
+        <div id="palette-grid" class="palette-grid" role="list" aria-label="Generated palette swatches"></div>
+      </section>
+
+      <section class="card fonts-card" aria-labelledby="fonts-title">
+        <h2 id="fonts-title">Font Pairing &amp; Live Preview</h2>
+        <p class="font-meta">
+          <strong>Heading:</strong> <span id="heading-font-name">-</span>
+          <span aria-hidden="true"> | </span>
+          <strong>Body:</strong> <span id="body-font-name">-</span>
+        </p>
+
+        <div id="preview" class="preview" aria-label="Generated typography preview">
+          <p class="preview-kicker">Preview</p>
+          <h3 id="preview-heading">Design Stories That Feel Intentional</h3>
+          <h4 id="preview-subhead">A clean pairing makes brand voice instantly clearer.</h4>
+          <p id="preview-body">
+            Use this sample to evaluate rhythm, readability, and tone across headings, supporting text, and actions. The UI shell stays neutral so generated aesthetics are the focus.
+          </p>
+          <button id="preview-button" class="sample-button" type="button">Sample Button</button>
+        </div>
+      </section>
+
+      <aside class="card favorites-card" aria-labelledby="favorites-title">
+        <div class="card-head">
+          <h2 id="favorites-title">Favorites</h2>
+          <p id="favorites-count" class="tag">0 saved</p>
+        </div>
+        <ul id="favorites-list" class="favorites-list" aria-label="Saved combinations"></ul>
+        <p id="favorites-empty" class="muted">No favorites yet. Save a combination to keep it here.</p>
+      </aside>
+    </main>
+
+    <footer class="app-footer">
+      Shortcuts: <kbd>Space</kbd> shuffle, <kbd>S</kbd> save, <kbd>C</kbd> copy CSS. Google Fonts remain subject to their respective licenses.
+    </footer>
+  </div>
+
+  <script defer>
+    (function () {
+      "use strict";
+
+      const STORAGE_KEYS = {
+        favorites: "aesthetic.favorites",
+        settings: "aesthetic.settings"
+      };
+
+      const FONT_PAIRS = [
+        { heading: "DM Serif Display", body: "Source Sans 3", headingWeights: "400", bodyWeights: "400;600;700", headingFallback: "serif", bodyFallback: "sans-serif" },
+        { heading: "Poppins", body: "Nunito Sans", headingWeights: "500;700", bodyWeights: "400;600;700", headingFallback: "sans-serif", bodyFallback: "sans-serif" },
+        { heading: "Bebas Neue", body: "Work Sans", headingWeights: "400", bodyWeights: "400;600;700", headingFallback: "sans-serif", bodyFallback: "sans-serif" },
+        { heading: "Playfair Display", body: "Inter", headingWeights: "500;700", bodyWeights: "400;600;700", headingFallback: "serif", bodyFallback: "sans-serif" },
+        { heading: "Montserrat", body: "Merriweather", headingWeights: "500;700", bodyWeights: "400;700", headingFallback: "sans-serif", bodyFallback: "serif" },
+        { heading: "Oswald", body: "Roboto", headingWeights: "500;700", bodyWeights: "400;500;700", headingFallback: "sans-serif", bodyFallback: "sans-serif" },
+        { heading: "Space Grotesk", body: "Cardo", headingWeights: "500;700", bodyWeights: "400;700", headingFallback: "sans-serif", bodyFallback: "serif" },
+        { heading: "Abril Fatface", body: "PT Sans", headingWeights: "400", bodyWeights: "400;700", headingFallback: "serif", bodyFallback: "sans-serif" },
+        { heading: "Rubik", body: "Libre Baskerville", headingWeights: "500;700", bodyWeights: "400;700", headingFallback: "sans-serif", bodyFallback: "serif" },
+        { heading: "Barlow Condensed", body: "Karla", headingWeights: "500;700", bodyWeights: "400;700", headingFallback: "sans-serif", bodyFallback: "sans-serif" },
+        { heading: "Manrope", body: "Crimson Text", headingWeights: "600;700", bodyWeights: "400;600", headingFallback: "sans-serif", bodyFallback: "serif" },
+        { heading: "Raleway", body: "Lora", headingWeights: "500;700", bodyWeights: "400;600", headingFallback: "sans-serif", bodyFallback: "serif" }
+      ];
+
+      const CURATED_DEFAULTS = [
+        {
+          name: "Minimal",
+          palette: ["#111827", "#374151", "#6B7280", "#D1D5DB", "#F9FAFB"],
+          fonts: { heading: "DM Serif Display", body: "Source Sans 3", headingWeights: "400", bodyWeights: "400;600;700", headingFallback: "serif", bodyFallback: "sans-serif" }
+        },
+        {
+          name: "Playful",
+          palette: ["#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF", "#845EC2"],
+          fonts: { heading: "Poppins", body: "Nunito Sans", headingWeights: "500;700", bodyWeights: "400;600;700", headingFallback: "sans-serif", bodyFallback: "sans-serif" }
+        },
+        {
+          name: "Bold",
+          palette: ["#0F172A", "#E11D48", "#F59E0B", "#10B981", "#F8FAFC"],
+          fonts: { heading: "Bebas Neue", body: "Work Sans", headingWeights: "400", bodyWeights: "400;600;700", headingFallback: "sans-serif", bodyFallback: "sans-serif" }
+        }
+      ];
+
+      const KIEWIT_PRIMARY_COLORS = ["#FFD200", "#000000", "#FFFFFF"];
+      const KIEWIT_ACCENT_COLORS = [
+        "#FFE066",
+        "#FFCC33",
+        "#E5B800",
+        "#CC9F00",
+        "#1F1F1F",
+        "#2F2F2F",
+        "#4A4A4A",
+        "#666666",
+        "#8A8A8A",
+        "#B3B3B3"
+      ];
+
+      const state = {
+        name: "Minimal",
+        palette: CURATED_DEFAULTS[0].palette.slice(),
+        fonts: normalizeFontConfig(CURATED_DEFAULTS[0].fonts),
+        favorites: [],
+        paletteMode: "random"
+      };
+
+      const elements = {
+        themeToggle: document.getElementById("theme-toggle"),
+        shuffleBtn: document.getElementById("shuffle-btn"),
+        kiewitModeBtn: document.getElementById("kiewit-mode-btn"),
+        saveBtn: document.getElementById("save-btn"),
+        copyCssBtn: document.getElementById("copy-css-btn"),
+        exportJsonBtn: document.getElementById("export-json-btn"),
+        status: document.getElementById("status"),
+        paletteGrid: document.getElementById("palette-grid"),
+        paletteName: document.getElementById("palette-name"),
+        headingFontName: document.getElementById("heading-font-name"),
+        bodyFontName: document.getElementById("body-font-name"),
+        preview: document.getElementById("preview"),
+        previewHeading: document.getElementById("preview-heading"),
+        previewSubhead: document.getElementById("preview-subhead"),
+        previewBody: document.getElementById("preview-body"),
+        previewButton: document.getElementById("preview-button"),
+        favoritesList: document.getElementById("favorites-list"),
+        favoritesCount: document.getElementById("favorites-count"),
+        favoritesEmpty: document.getElementById("favorites-empty"),
+        presetButtons: Array.from(document.querySelectorAll(".preset-chip[data-preset]"))
+      };
+
+      init();
+
+      function init() {
+        state.favorites = loadFavorites();
+        applySavedTheme();
+        bindEvents();
+        updatePaletteModeControl();
+        applyCombination(CURATED_DEFAULTS[0], { silent: true });
+        renderFavorites();
+        announce("Minimal preset loaded.");
+      }
+
+      function bindEvents() {
+        elements.themeToggle.addEventListener("click", toggleTheme);
+        elements.shuffleBtn.addEventListener("click", handleShuffle);
+        elements.kiewitModeBtn.addEventListener("click", toggleKiewitMode);
+        elements.saveBtn.addEventListener("click", saveFavorite);
+        elements.copyCssBtn.addEventListener("click", exportCSSVars);
+        elements.exportJsonBtn.addEventListener("click", exportJSON);
+
+        elements.presetButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const preset = CURATED_DEFAULTS.find((item) => item.name === button.dataset.preset);
+            if (!preset) {
+              return;
+            }
+            applyCombination(preset, { silent: true });
+            announce(preset.name + " preset applied.");
+          });
+        });
+
+        elements.favoritesList.addEventListener("click", function (event) {
+          const actionButton = event.target.closest("button[data-action]");
+          if (!actionButton) {
+            return;
+          }
+
+          const action = actionButton.dataset.action;
+          const id = actionButton.dataset.id;
+
+          if (action === "apply") {
+            const selected = state.favorites.find((item) => item.id === id);
+            if (selected) {
+              applyCombination(selected, { silent: true });
+              announce("Favorite reapplied.");
+            }
+          }
+
+          if (action === "delete") {
+            state.favorites = state.favorites.filter((item) => item.id !== id);
+            persistFavorites();
+            renderFavorites();
+            announce("Favorite deleted.");
+          }
+        });
+
+        document.addEventListener("keydown", function (event) {
+          if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) {
+            return;
+          }
+
+          if (isTypingContext(event.target)) {
+            return;
+          }
+
+          if (event.code === "Space") {
+            event.preventDefault();
+            handleShuffle();
+            return;
+          }
+
+          const key = event.key.toLowerCase();
+          if (key === "s") {
+            event.preventDefault();
+            saveFavorite();
+            return;
+          }
+
+          if (key === "c") {
+            event.preventDefault();
+            exportCSSVars();
+          }
+        });
+      }
+
+      function handleShuffle() {
+        const useKiewit = state.paletteMode === "kiewit";
+        const palette = useKiewit ? getKiewitPalette() : getRandomPalette();
+        const fonts = pickFontPair(state.fonts);
+        const paletteName = useKiewit ? "Kiewit Shuffled" : "Shuffled";
+        applyCombination({ name: paletteName, palette: palette, fonts: fonts }, { silent: true });
+        announce("Palette and fonts shuffled.");
+      }
+
+      function toggleKiewitMode() {
+        state.paletteMode = state.paletteMode === "kiewit" ? "random" : "kiewit";
+        updatePaletteModeControl();
+
+        if (state.paletteMode === "kiewit") {
+          applyCombination({ name: "Kiewit Shuffled", palette: getKiewitPalette(), fonts: state.fonts }, { silent: true });
+          announce("Kiewit mode enabled. Shuffle now keeps #FFD200, #000000, and #FFFFFF.");
+          return;
+        }
+
+        announce("Kiewit mode disabled. Shuffle will use fully random palettes.");
+      }
+
+      function applyCombination(combo, options) {
+        const safeOptions = options || {};
+        state.name = combo.name || "Custom";
+        state.palette = Array.isArray(combo.palette) ? combo.palette.slice() : getRandomPalette();
+        state.fonts = normalizeFontConfig(combo.fonts || pickFontPair(state.fonts));
+
+        applyFonts(state.fonts);
+        renderPalette(state.palette);
+        renderPreview();
+        updatePresetState();
+        elements.paletteName.textContent = state.name;
+
+        if (!safeOptions.silent) {
+          announce("Applied " + state.name + " combination.");
+        }
+      }
+
+      function getRandomPalette() {
+        // Keep palettes cohesive by generating around one base hue and a small set of color harmony schemes.
+        const count = randomBetween(4, 6);
+        const baseHue = randomBetween(0, 359);
+        const schemes = ["analogous", "split", "triad", "monochrome"];
+        const scheme = schemes[randomBetween(0, schemes.length - 1)];
+        const generated = [];
+
+        for (let i = 0; i < count; i += 1) {
+          let hue = baseHue;
+          if (scheme === "analogous") {
+            hue = baseHue + (i - Math.floor(count / 2)) * 22;
+          } else if (scheme === "split") {
+            const splitOffsets = [0, 150, 210, 30, -30, 180];
+            hue = baseHue + splitOffsets[i % splitOffsets.length];
+          } else if (scheme === "triad") {
+            const triadOffsets = [0, 120, 240, 30, 150, 270];
+            hue = baseHue + triadOffsets[i % triadOffsets.length];
+          } else {
+            hue = baseHue + randomBetween(-10, 10);
+          }
+
+          const saturation = scheme === "monochrome" ? randomBetween(24, 58) : randomBetween(52, 84);
+          const lightness = randomBetween(28, 78);
+          generated.push(hslToHex(wrapHue(hue), saturation, lightness));
+        }
+
+        const unique = Array.from(new Set(generated));
+        while (unique.length < count) {
+          unique.push(hslToHex(wrapHue(baseHue + randomBetween(-50, 50)), randomBetween(45, 82), randomBetween(25, 80)));
+        }
+
+        return unique.slice(0, count);
+      }
+
+      function getKiewitPalette() {
+        // Lock Kiewit primaries and rotate only accent colors for brand-safe shuffle behavior.
+        const count = randomBetween(4, 6);
+        const accentCount = Math.max(1, count - KIEWIT_PRIMARY_COLORS.length);
+        const accents = shuffleArray(KIEWIT_ACCENT_COLORS).slice(0, accentCount);
+        return shuffleArray(KIEWIT_PRIMARY_COLORS.concat(accents));
+      }
+
+      function pickFontPair(currentFonts) {
+        const currentHeading = currentFonts ? currentFonts.heading : "";
+        const currentBody = currentFonts ? currentFonts.body : "";
+        const choices = FONT_PAIRS.filter(function (pair) {
+          return !(pair.heading === currentHeading && pair.body === currentBody);
+        });
+        const pool = choices.length > 0 ? choices : FONT_PAIRS;
+        const selected = pool[randomBetween(0, pool.length - 1)];
+        return normalizeFontConfig(selected);
+      }
+
+      function applyFonts(fonts) {
+        const safeFonts = normalizeFontConfig(fonts);
+        const headFamily = safeFonts.heading;
+        const bodyFamily = safeFonts.body;
+        elements.headingFontName.textContent = headFamily;
+        elements.bodyFontName.textContent = bodyFamily;
+
+        elements.previewHeading.style.fontFamily = quoteFamily(headFamily) + ", " + safeFonts.headingFallback;
+        elements.previewSubhead.style.fontFamily = quoteFamily(headFamily) + ", " + safeFonts.headingFallback;
+        elements.previewBody.style.fontFamily = quoteFamily(bodyFamily) + ", " + safeFonts.bodyFallback;
+        elements.previewButton.style.fontFamily = quoteFamily(bodyFamily) + ", " + safeFonts.bodyFallback;
+
+        const requestedFamilies = [
+          { family: headFamily, weights: safeFonts.headingWeights },
+          { family: bodyFamily, weights: safeFonts.bodyWeights }
+        ];
+
+        const dedupedFamilies = [];
+        const seen = new Set();
+        requestedFamilies.forEach(function (item) {
+          const key = item.family + "|" + item.weights;
+          if (!seen.has(key)) {
+            seen.add(key);
+            dedupedFamilies.push(item);
+          }
+        });
+
+        const query = dedupedFamilies
+          .map(function (item) {
+            return "family=" + item.family.trim().replace(/\s+/g, "+") + ":wght@" + item.weights;
+          })
+          .join("&");
+
+        // Fonts are lazy-loaded only for the currently selected pair to keep requests small.
+        let linkEl = document.getElementById("generated-fonts-link");
+        if (!linkEl) {
+          linkEl = document.createElement("link");
+          linkEl.id = "generated-fonts-link";
+          linkEl.rel = "stylesheet";
+          document.head.appendChild(linkEl);
+        }
+
+        const href = "https://fonts.googleapis.com/css2?" + query + "&display=swap";
+        if (linkEl.href !== href) {
+          linkEl.href = href;
+        }
+      }
+
+      function renderPalette(palette) {
+        elements.paletteGrid.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+
+        palette.forEach(function (hex) {
+          const swatch = document.createElement("button");
+          swatch.type = "button";
+          swatch.className = "swatch";
+          swatch.style.setProperty("--swatch-color", hex);
+          swatch.setAttribute("role", "listitem");
+          swatch.setAttribute("aria-label", "Color " + hex + ". Press to copy HEX value.");
+
+          const colorBlock = document.createElement("span");
+          colorBlock.className = "swatch-color";
+          colorBlock.setAttribute("aria-hidden", "true");
+
+          const info = document.createElement("span");
+          info.className = "swatch-info";
+
+          const hexLabel = document.createElement("span");
+          hexLabel.className = "swatch-hex";
+          hexLabel.textContent = hex;
+
+          const copyHint = document.createElement("span");
+          copyHint.className = "swatch-copy";
+          copyHint.textContent = "Click to copy";
+
+          const contrast = checkContrast(hex);
+          const contrastRow = document.createElement("span");
+          contrastRow.className = "contrast-row";
+          contrastRow.appendChild(createContrastBadge("White", contrast.white));
+          contrastRow.appendChild(createContrastBadge("Black", contrast.black));
+
+          info.appendChild(hexLabel);
+          info.appendChild(copyHint);
+          info.appendChild(contrastRow);
+          swatch.appendChild(colorBlock);
+          swatch.appendChild(info);
+
+          swatch.addEventListener("click", async function () {
+            const copied = await copyText(hex);
+            announce(copied ? "Copied " + hex + " to clipboard." : "Unable to copy " + hex + ".");
+          });
+
+          fragment.appendChild(swatch);
+        });
+
+        elements.paletteGrid.appendChild(fragment);
+      }
+
+      function renderPreview() {
+        const rankedByDarkness = state.palette
+          .slice()
+          .sort(function (a, b) {
+            return relativeLuminance(a) - relativeLuminance(b);
+          });
+
+        // We bias preview text toward darker palette colors for stable readability on the neutral background.
+        const darkest = rankedByDarkness[0] || "#111827";
+        const secondDarkest = rankedByDarkness[1] || darkest;
+        const accent = state.palette[Math.floor(state.palette.length / 2)] || darkest;
+        const border = rankedByDarkness[rankedByDarkness.length - 1] || accent;
+        const buttonText = pickReadableTextColor(accent);
+
+        elements.previewHeading.style.color = darkest;
+        elements.previewSubhead.style.color = secondDarkest;
+        elements.previewBody.style.color = darkest;
+        elements.previewButton.style.backgroundColor = accent;
+        elements.previewButton.style.color = buttonText;
+        elements.previewButton.style.borderColor = border;
+        elements.preview.style.borderColor = border;
+
+        elements.preview.classList.remove("refresh");
+        void elements.preview.offsetWidth;
+        elements.preview.classList.add("refresh");
+      }
+
+      function saveFavorite() {
+        const candidate = {
+          id: createId(),
+          name: "Saved " + new Date().toLocaleString(),
+          palette: state.palette.slice(),
+          fonts: {
+            heading: state.fonts.heading,
+            body: state.fonts.body,
+            headingWeights: state.fonts.headingWeights,
+            bodyWeights: state.fonts.bodyWeights,
+            headingFallback: state.fonts.headingFallback,
+            bodyFallback: state.fonts.bodyFallback
+          }
+        };
+
+        const exists = state.favorites.some(function (item) {
+          return arraysEqual(item.palette, candidate.palette) && item.fonts.heading === candidate.fonts.heading && item.fonts.body === candidate.fonts.body;
+        });
+
+        if (exists) {
+          announce("This combination is already saved.");
+          return;
+        }
+
+        state.favorites.unshift(candidate);
+        state.favorites = state.favorites.slice(0, 40);
+        persistFavorites();
+        renderFavorites();
+        announce("Combination saved to favorites.");
+      }
+
+      function loadFavorites() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEYS.favorites);
+          if (!raw) {
+            return [];
+          }
+
+          const parsed = JSON.parse(raw);
+          if (!Array.isArray(parsed)) {
+            return [];
+          }
+
+          return parsed
+            .filter(function (item) {
+              return item && Array.isArray(item.palette) && item.palette.length >= 4 && item.fonts && typeof item.fonts.heading === "string" && typeof item.fonts.body === "string";
+            })
+            .map(function (item) {
+              return {
+                id: typeof item.id === "string" ? item.id : createId(),
+                name: typeof item.name === "string" && item.name.trim() ? item.name : "Saved combination",
+                palette: item.palette.slice(0, 6),
+                fonts: normalizeFontConfig(item.fonts)
+              };
+            });
+        } catch (error) {
+          console.warn("Failed to load favorites:", error);
+          return [];
+        }
+      }
+
+      function renderFavorites() {
+        elements.favoritesList.innerHTML = "";
+
+        if (!state.favorites.length) {
+          elements.favoritesEmpty.hidden = false;
+          elements.favoritesCount.textContent = "0 saved";
+          return;
+        }
+
+        elements.favoritesEmpty.hidden = true;
+        elements.favoritesCount.textContent = state.favorites.length + " saved";
+
+        const fragment = document.createDocumentFragment();
+        state.favorites.forEach(function (favorite) {
+          const li = document.createElement("li");
+          li.className = "favorite-item";
+
+          const head = document.createElement("div");
+          head.className = "favorite-head";
+
+          const name = document.createElement("p");
+          name.className = "favorite-name";
+          name.textContent = favorite.name;
+
+          const meta = document.createElement("p");
+          meta.className = "favorite-meta";
+          meta.textContent = "H: " + favorite.fonts.heading + " | B: " + favorite.fonts.body;
+
+          head.appendChild(name);
+          li.appendChild(head);
+          li.appendChild(meta);
+
+          const mini = document.createElement("div");
+          mini.className = "mini-swatches";
+          favorite.palette.forEach(function (hex) {
+            const swatch = document.createElement("span");
+            swatch.style.background = hex;
+            swatch.setAttribute("aria-label", "Saved color " + hex);
+            mini.appendChild(swatch);
+          });
+          li.appendChild(mini);
+
+          const actions = document.createElement("div");
+          actions.className = "favorite-actions";
+
+          const applyBtn = document.createElement("button");
+          applyBtn.className = "btn";
+          applyBtn.type = "button";
+          applyBtn.dataset.action = "apply";
+          applyBtn.dataset.id = favorite.id;
+          applyBtn.textContent = "Apply";
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn btn-danger";
+          deleteBtn.type = "button";
+          deleteBtn.dataset.action = "delete";
+          deleteBtn.dataset.id = favorite.id;
+          deleteBtn.textContent = "Delete";
+
+          actions.appendChild(applyBtn);
+          actions.appendChild(deleteBtn);
+          li.appendChild(actions);
+
+          fragment.appendChild(li);
+        });
+
+        elements.favoritesList.appendChild(fragment);
+      }
+
+      async function exportCSSVars() {
+        const lines = [":root {"];
+        state.palette.forEach(function (hex, index) {
+          lines.push("  --color-" + (index + 1) + ": " + hex + ";");
+        });
+        lines.push("  --font-heading: \"" + state.fonts.heading + "\";");
+        lines.push("  --font-body: \"" + state.fonts.body + "\";");
+        lines.push("}");
+
+        const cssBlock = lines.join("\n");
+        const copied = await copyText(cssBlock);
+        announce(copied ? "CSS variables copied." : "Unable to copy CSS variables.");
+      }
+
+      async function exportJSON() {
+        const payload = {
+          palette: state.palette.slice(),
+          fonts: {
+            heading: state.fonts.heading,
+            body: state.fonts.body
+          }
+        };
+
+        const jsonText = JSON.stringify(payload, null, 2);
+        // Perform both flows so users can paste immediately or keep a portable file.
+        const copied = await copyText(jsonText);
+        downloadJSON(jsonText);
+        announce(copied ? "JSON downloaded and copied." : "JSON downloaded.");
+      }
+
+      function checkContrast(hex) {
+        // WCAG AA normal text threshold is 4.5:1.
+        const whiteRatio = contrastRatio(hex, "#FFFFFF");
+        const blackRatio = contrastRatio(hex, "#000000");
+
+        return {
+          white: {
+            ratio: whiteRatio,
+            pass: whiteRatio >= 4.5
+          },
+          black: {
+            ratio: blackRatio,
+            pass: blackRatio >= 4.5
+          }
+        };
+      }
+
+      function createContrastBadge(label, data) {
+        const badge = document.createElement("span");
+        badge.className = "badge " + (data.pass ? "pass" : "fail");
+        const ratioText = data.ratio.toFixed(2);
+        const passText = data.pass ? "Pass" : "Fail";
+        badge.textContent = label + " " + ratioText + " " + passText;
+        badge.setAttribute("aria-label", label + " text contrast ratio " + ratioText + " to 1 " + (data.pass ? "passes" : "fails") + " WCAG AA normal text");
+        return badge;
+      }
+
+      function normalizeFontConfig(fonts) {
+        const fallback = fonts || FONT_PAIRS[0];
+        const pairMatch = FONT_PAIRS.find(function (pair) {
+          return pair.heading === fallback.heading && pair.body === fallback.body;
+        });
+
+        return {
+          heading: fallback.heading || (pairMatch ? pairMatch.heading : FONT_PAIRS[0].heading),
+          body: fallback.body || (pairMatch ? pairMatch.body : FONT_PAIRS[0].body),
+          headingWeights: fallback.headingWeights || (pairMatch ? pairMatch.headingWeights : "400;700"),
+          bodyWeights: fallback.bodyWeights || (pairMatch ? pairMatch.bodyWeights : "400;600;700"),
+          headingFallback: fallback.headingFallback || (pairMatch ? pairMatch.headingFallback : "serif"),
+          bodyFallback: fallback.bodyFallback || (pairMatch ? pairMatch.bodyFallback : "sans-serif")
+        };
+      }
+
+      function applySavedTheme() {
+        let savedTheme = "light";
+        try {
+          const raw = localStorage.getItem(STORAGE_KEYS.settings);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.theme === "dark") {
+              savedTheme = "dark";
+            }
+          }
+        } catch (error) {
+          console.warn("Failed to parse theme settings:", error);
+        }
+
+        setTheme(savedTheme, false);
+      }
+
+      function toggleTheme() {
+        const darkEnabled = document.documentElement.classList.contains("theme-dark");
+        setTheme(darkEnabled ? "light" : "dark", true);
+      }
+
+      function setTheme(theme, persist) {
+        const useDark = theme === "dark";
+        document.documentElement.classList.toggle("theme-dark", useDark);
+        elements.themeToggle.textContent = useDark ? "Use Light Mode" : "Use Dark Mode";
+        elements.themeToggle.setAttribute("aria-pressed", String(useDark));
+
+        if (persist) {
+          localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify({ theme: useDark ? "dark" : "light" }));
+        }
+      }
+
+      function updatePresetState() {
+        elements.presetButtons.forEach(function (button) {
+          const isActive = button.dataset.preset === state.name;
+          button.classList.toggle("active", isActive);
+          button.setAttribute("aria-pressed", String(isActive));
+        });
+      }
+
+      function updatePaletteModeControl() {
+        const enabled = state.paletteMode === "kiewit";
+        elements.kiewitModeBtn.classList.toggle("active", enabled);
+        elements.kiewitModeBtn.setAttribute("aria-pressed", String(enabled));
+        elements.kiewitModeBtn.textContent = enabled ? "Kiewit Palette Mode: On" : "Kiewit Palette Mode: Off";
+      }
+
+      function persistFavorites() {
+        localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(state.favorites));
+      }
+
+      function contrastRatio(hexA, hexB) {
+        const lumA = relativeLuminance(hexA);
+        const lumB = relativeLuminance(hexB);
+        const lighter = Math.max(lumA, lumB);
+        const darker = Math.min(lumA, lumB);
+        return (lighter + 0.05) / (darker + 0.05);
+      }
+
+      function relativeLuminance(hex) {
+        const rgb = hexToRgb(hex);
+        const transform = function (channel) {
+          const normalized = channel / 255;
+          if (normalized <= 0.03928) {
+            return normalized / 12.92;
+          }
+          return Math.pow((normalized + 0.055) / 1.055, 2.4);
+        };
+
+        const r = transform(rgb.r);
+        const g = transform(rgb.g);
+        const b = transform(rgb.b);
+
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      }
+
+      function hexToRgb(hex) {
+        const sanitized = hex.replace("#", "").trim();
+        const normalized = sanitized.length === 3
+          ? sanitized.split("").map(function (char) { return char + char; }).join("")
+          : sanitized;
+
+        const intVal = parseInt(normalized, 16);
+
+        return {
+          r: (intVal >> 16) & 255,
+          g: (intVal >> 8) & 255,
+          b: intVal & 255
+        };
+      }
+
+      function hslToHex(h, s, l) {
+        const saturation = s / 100;
+        const lightness = l / 100;
+
+        const c = (1 - Math.abs(2 * lightness - 1)) * saturation;
+        const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+        const m = lightness - c / 2;
+
+        let rPrime = 0;
+        let gPrime = 0;
+        let bPrime = 0;
+
+        if (h >= 0 && h < 60) {
+          rPrime = c;
+          gPrime = x;
+        } else if (h < 120) {
+          rPrime = x;
+          gPrime = c;
+        } else if (h < 180) {
+          gPrime = c;
+          bPrime = x;
+        } else if (h < 240) {
+          gPrime = x;
+          bPrime = c;
+        } else if (h < 300) {
+          rPrime = x;
+          bPrime = c;
+        } else {
+          rPrime = c;
+          bPrime = x;
+        }
+
+        const r = Math.round((rPrime + m) * 255);
+        const g = Math.round((gPrime + m) * 255);
+        const b = Math.round((bPrime + m) * 255);
+
+        return "#" + [r, g, b].map(function (value) {
+          const hex = value.toString(16).toUpperCase();
+          return hex.length === 1 ? "0" + hex : hex;
+        }).join("");
+      }
+
+      function wrapHue(value) {
+        return ((value % 360) + 360) % 360;
+      }
+
+      function pickReadableTextColor(backgroundHex) {
+        const whiteRatio = contrastRatio(backgroundHex, "#FFFFFF");
+        const blackRatio = contrastRatio(backgroundHex, "#000000");
+        return whiteRatio >= blackRatio ? "#FFFFFF" : "#000000";
+      }
+
+      function randomBetween(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function shuffleArray(values) {
+        const copy = values.slice();
+        for (let i = copy.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = copy[i];
+          copy[i] = copy[j];
+          copy[j] = temp;
+        }
+        return copy;
+      }
+
+      function quoteFamily(familyName) {
+        return "\"" + familyName + "\"";
+      }
+
+      function arraysEqual(a, b) {
+        if (a.length !== b.length) {
+          return false;
+        }
+        for (let i = 0; i < a.length; i += 1) {
+          if (a[i] !== b[i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function createId() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+        return "id-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+      }
+
+      function isTypingContext(target) {
+        return Boolean(target.closest("input, textarea, select, button, a, [contenteditable='true']"));
+      }
+
+      function announce(message) {
+        elements.status.textContent = message;
+      }
+
+      async function copyText(text) {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+            return true;
+          }
+        } catch (error) {
+          console.warn("Clipboard API copy failed:", error);
+        }
+
+        // Fallback for file:// or older browser contexts where Clipboard API is unavailable.
+        const helper = document.createElement("textarea");
+        helper.value = text;
+        helper.setAttribute("readonly", "readonly");
+        helper.style.position = "fixed";
+        helper.style.opacity = "0";
+        helper.style.pointerEvents = "none";
+        document.body.appendChild(helper);
+        helper.select();
+
+        try {
+          const success = document.execCommand("copy");
+          document.body.removeChild(helper);
+          return success;
+        } catch (error) {
+          document.body.removeChild(helper);
+          return false;
+        }
+      }
+
+      function downloadJSON(jsonText) {
+        const blob = new Blob([jsonText], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "aesthetic-combination.json";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    })();
+  </script>
+</body>
+</html>
