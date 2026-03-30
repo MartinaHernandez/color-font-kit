@@ -99,6 +99,49 @@
       margin-bottom: 1rem;
     }
 
+    .shortcuts-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.7rem 0.9rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--ui-surface) 92%, transparent);
+      box-shadow: var(--ui-shadow);
+      animation: fade-slide var(--transition-base);
+    }
+
+    .shortcuts-banner p {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--ui-muted);
+    }
+
+    .shortcuts-banner strong {
+      color: var(--ui-text);
+      font-family: "Inter", sans-serif;
+      margin-right: 0.35rem;
+    }
+
+    kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.5rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 0.4rem;
+      border: 1px solid var(--ui-border);
+      background: var(--ui-surface);
+      color: var(--ui-text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.2;
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+    }
+
     .app-header h1 {
       margin: 0;
       font-size: clamp(1.35rem, 2.2vw, 1.8rem);
@@ -194,6 +237,71 @@
     .mode-row {
       display: grid;
       gap: 0.5rem;
+    }
+
+    .influence-row {
+      display: grid;
+      gap: 0.65rem;
+      padding: 0.75rem;
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-md);
+      background: color-mix(in srgb, var(--ui-surface) 94%, transparent);
+    }
+
+    .influence-row legend {
+      font-family: "Inter", sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0 0.3rem;
+      color: var(--ui-text);
+    }
+
+    .influence-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    .control-stack label {
+      font-size: 0.85rem;
+      color: var(--ui-muted);
+      font-family: "Inter", sans-serif;
+    }
+
+    .color-input {
+      width: 100%;
+      max-width: 150px;
+      height: 2.1rem;
+      border: 1px solid var(--ui-border);
+      border-radius: var(--radius-sm);
+      background: var(--ui-surface);
+      padding: 0.1rem;
+      cursor: pointer;
+    }
+
+    .saturation-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .saturation-input {
+      width: 100%;
+      accent-color: var(--ui-accent);
+    }
+
+    .saturation-output {
+      min-width: 3ch;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.82rem;
+      color: var(--ui-text);
+      font-weight: 600;
     }
 
     .mode-hint {
@@ -525,6 +633,10 @@
         padding: 0.75rem;
       }
 
+      .shortcuts-banner {
+        display: none;
+      }
+
       .app-header {
         flex-direction: column;
         align-items: stretch;
@@ -539,6 +651,10 @@
         width: 100%;
         justify-content: center;
         text-align: center;
+      }
+
+      .influence-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -578,6 +694,11 @@
       <button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false">Use Dark Mode</button>
     </header>
 
+    <section class="shortcuts-banner" aria-label="Keyboard shortcuts">
+      <p><strong>Keyboard Shortcuts</strong> More visible controls for faster iteration.</p>
+      <p><kbd>Space</kbd> Shuffle <kbd>S</kbd> Save <kbd>C</kbd> Copy CSS</p>
+    </section>
+
     <main id="main-content" class="app-main">
       <section class="card controls-card" aria-labelledby="controls-title">
         <h2 id="controls-title">Controls</h2>
@@ -604,6 +725,23 @@
               <span class="mode-color-chip" title="CMYK 0/0/0/0 | RGB 255/255/255"><span class="mode-color-dot" data-color="#FFFFFF" style="--dot-color:#FFFFFF" aria-hidden="true"></span>White #FFFFFF</span>
             </div>
           </div>
+
+          <fieldset class="influence-row">
+            <legend>Palette Influence</legend>
+            <div class="influence-grid">
+              <div class="control-stack">
+                <label for="base-color-input">Main color</label>
+                <input id="base-color-input" class="color-input" type="color" value="#111827" />
+              </div>
+              <div class="control-stack">
+                <label for="saturation-input">Saturation</label>
+                <div class="saturation-wrap">
+                  <input id="saturation-input" class="saturation-input" type="range" min="0" max="100" step="1" value="50" />
+                  <output id="saturation-output" class="saturation-output" for="saturation-input">50%</output>
+                </div>
+              </div>
+            </div>
+          </fieldset>
         </div>
         <p id="status" class="status" role="status" aria-live="polite"></p>
       </section>
@@ -646,7 +784,7 @@
     </main>
 
     <footer class="app-footer">
-      Shortcuts: <kbd>Space</kbd> shuffle, <kbd>S</kbd> save, <kbd>C</kbd> copy CSS. Google Fonts remain subject to their respective licenses.
+      Google Fonts remain subject to their respective licenses.
     </footer>
   </div>
 
@@ -706,18 +844,27 @@
         "#B3B3B3"
       ];
 
+      const DEFAULT_PALETTE_INFLUENCE = deriveInfluenceFromPalette(CURATED_DEFAULTS[0].palette);
+
       const state = {
         name: "Minimal",
         palette: CURATED_DEFAULTS[0].palette.slice(),
         fonts: normalizeFontConfig(CURATED_DEFAULTS[0].fonts),
         favorites: [],
-        paletteMode: "random"
+        paletteMode: "random",
+        paletteInfluence: {
+          baseColor: DEFAULT_PALETTE_INFLUENCE.baseColor,
+          saturation: DEFAULT_PALETTE_INFLUENCE.saturation
+        }
       };
 
       const elements = {
         themeToggle: document.getElementById("theme-toggle"),
         shuffleBtn: document.getElementById("shuffle-btn"),
         kiewitModeBtn: document.getElementById("kiewit-mode-btn"),
+        baseColorInput: document.getElementById("base-color-input"),
+        saturationInput: document.getElementById("saturation-input"),
+        saturationOutput: document.getElementById("saturation-output"),
         saveBtn: document.getElementById("save-btn"),
         copyCssBtn: document.getElementById("copy-css-btn"),
         exportJsonBtn: document.getElementById("export-json-btn"),
@@ -741,8 +888,9 @@
 
       function init() {
         state.favorites = loadFavorites();
-        applySavedTheme();
+        applySavedSettings();
         bindEvents();
+        updateInfluenceControls();
         updatePaletteModeControl();
         applyCombination(CURATED_DEFAULTS[0], { silent: true });
         renderFavorites();
@@ -753,6 +901,8 @@
         elements.themeToggle.addEventListener("click", toggleTheme);
         elements.shuffleBtn.addEventListener("click", handleShuffle);
         elements.kiewitModeBtn.addEventListener("click", toggleKiewitMode);
+        elements.baseColorInput.addEventListener("input", handleInfluenceChange);
+        elements.saturationInput.addEventListener("input", handleInfluenceChange);
         elements.saveBtn.addEventListener("click", saveFavorite);
         elements.copyCssBtn.addEventListener("click", exportCSSVars);
         elements.exportJsonBtn.addEventListener("click", exportJSON);
@@ -763,6 +913,9 @@
             if (!preset) {
               return;
             }
+            syncInfluenceFromPalette(preset.palette);
+            updateInfluenceControls();
+            persistSettings();
             applyCombination(preset, { silent: true });
             announce(preset.name + " preset applied.");
           });
@@ -824,7 +977,17 @@
 
       function handleShuffle() {
         const useKiewit = state.paletteMode === "kiewit";
-        const palette = useKiewit ? getKiewitPalette() : getRandomPalette();
+        const palette = useKiewit
+          ? getKiewitPalette({
+            count: randomBetween(4, 6),
+            baseColor: state.paletteInfluence.baseColor,
+            saturation: state.paletteInfluence.saturation
+          })
+          : getRandomPalette({
+            count: randomBetween(4, 6),
+            baseColor: state.paletteInfluence.baseColor,
+            saturation: state.paletteInfluence.saturation
+          });
         const fonts = pickFontPair(state.fonts);
         const paletteName = useKiewit ? "Kiewit Shuffled" : "Shuffled";
         applyCombination({ name: paletteName, palette: palette, fonts: fonts }, { silent: true });
@@ -836,7 +999,15 @@
         updatePaletteModeControl();
 
         if (state.paletteMode === "kiewit") {
-          applyCombination({ name: "Kiewit Shuffled", palette: getKiewitPalette(), fonts: state.fonts }, { silent: true });
+          applyCombination({
+            name: "Kiewit Shuffled",
+            palette: getKiewitPalette({
+              count: clampPaletteCount(state.palette.length),
+              baseColor: state.paletteInfluence.baseColor,
+              saturation: state.paletteInfluence.saturation
+            }),
+            fonts: state.fonts
+          }, { silent: true });
           announce("Kiewit mode enabled. Shuffle now keeps #FFD200, #000000, and #FFFFFF.");
           return;
         }
@@ -844,10 +1015,47 @@
         announce("Kiewit mode disabled. Shuffle will use fully random palettes.");
       }
 
+      function handleInfluenceChange() {
+        state.paletteInfluence.baseColor = normalizeHex(elements.baseColorInput.value);
+        state.paletteInfluence.saturation = clampNumber(Number(elements.saturationInput.value), 0, 100);
+        updateInfluenceControls();
+        persistSettings();
+        regeneratePaletteFromInfluence();
+      }
+
+      function regeneratePaletteFromInfluence() {
+        const count = clampPaletteCount(state.palette.length);
+        const useKiewit = state.paletteMode === "kiewit";
+        const palette = useKiewit
+          ? getKiewitPalette({
+            count: count,
+            baseColor: state.paletteInfluence.baseColor,
+            saturation: state.paletteInfluence.saturation
+          })
+          : getRandomPalette({
+            count: count,
+            baseColor: state.paletteInfluence.baseColor,
+            saturation: state.paletteInfluence.saturation
+          });
+        const label = useKiewit ? "Kiewit Tuned" : "Tuned";
+        applyCombination({ name: label, palette: palette, fonts: state.fonts }, { silent: true });
+        announce("Palette influence updated.");
+      }
+
       function applyCombination(combo, options) {
         const safeOptions = options || {};
         state.name = combo.name || "Custom";
-        state.palette = Array.isArray(combo.palette) ? combo.palette.slice() : getRandomPalette();
+        state.palette = Array.isArray(combo.palette)
+          ? combo.palette.slice()
+          : (state.paletteMode === "kiewit"
+            ? getKiewitPalette({
+              baseColor: state.paletteInfluence.baseColor,
+              saturation: state.paletteInfluence.saturation
+            })
+            : getRandomPalette({
+              baseColor: state.paletteInfluence.baseColor,
+              saturation: state.paletteInfluence.saturation
+            }));
         state.fonts = normalizeFontConfig(combo.fonts || pickFontPair(state.fonts));
 
         applyFonts(state.fonts);
@@ -861,47 +1069,124 @@
         }
       }
 
-      function getRandomPalette() {
+      function getRandomPalette(options) {
         // Keep palettes cohesive by generating around one base hue and a small set of color harmony schemes.
-        const count = randomBetween(4, 6);
-        const baseHue = randomBetween(0, 359);
+        const opts = options || {};
+        const count = clampPaletteCount(opts.count);
+        const baseColor = normalizeHex(opts.baseColor || state.paletteInfluence.baseColor);
+        const baseHsl = hexToHsl(baseColor);
+        const baseHue = baseHsl.h;
+        const saturationCenter = clampNumber(
+          typeof opts.saturation === "number" ? opts.saturation : state.paletteInfluence.saturation,
+          0,
+          100
+        );
+        const saturationVariance = saturationCenter <= 20 ? 4 : (saturationCenter <= 50 ? 8 : 12);
         const schemes = ["analogous", "split", "triad", "monochrome"];
         const scheme = schemes[randomBetween(0, schemes.length - 1)];
-        const generated = [];
+        const anchoredColor = hslToHex(baseHsl.h, saturationCenter, baseHsl.l);
+        const generated = [anchoredColor];
+        const seen = new Set([anchoredColor]);
 
-        for (let i = 0; i < count; i += 1) {
+        for (let i = 1; i < count; i += 1) {
           let hue = baseHue;
+          const offsetIndex = i - 1;
           if (scheme === "analogous") {
-            hue = baseHue + (i - Math.floor(count / 2)) * 22;
+            hue = baseHue + (offsetIndex - Math.floor((count - 1) / 2)) * 24;
           } else if (scheme === "split") {
             const splitOffsets = [0, 150, 210, 30, -30, 180];
-            hue = baseHue + splitOffsets[i % splitOffsets.length];
+            hue = baseHue + splitOffsets[offsetIndex % splitOffsets.length];
           } else if (scheme === "triad") {
             const triadOffsets = [0, 120, 240, 30, 150, 270];
-            hue = baseHue + triadOffsets[i % triadOffsets.length];
+            hue = baseHue + triadOffsets[offsetIndex % triadOffsets.length];
           } else {
             hue = baseHue + randomBetween(-10, 10);
           }
 
-          const saturation = scheme === "monochrome" ? randomBetween(24, 58) : randomBetween(52, 84);
+          const saturation = scheme === "monochrome"
+            ? clampNumber(saturationCenter + randomBetween(-Math.max(2, Math.floor(saturationVariance / 2)), Math.max(2, Math.floor(saturationVariance / 2))), 0, 100)
+            : clampNumber(saturationCenter + randomBetween(-saturationVariance, saturationVariance), 0, 100);
           const lightness = randomBetween(28, 78);
-          generated.push(hslToHex(wrapHue(hue), saturation, lightness));
+          const candidate = hslToHex(wrapHue(hue), saturation, lightness);
+          if (!seen.has(candidate)) {
+            generated.push(candidate);
+            seen.add(candidate);
+          }
         }
 
-        const unique = Array.from(new Set(generated));
-        while (unique.length < count) {
-          unique.push(hslToHex(wrapHue(baseHue + randomBetween(-50, 50)), randomBetween(45, 82), randomBetween(25, 80)));
+        while (generated.length < count) {
+          const filler = hslToHex(
+            wrapHue(baseHue + randomBetween(-55, 55)),
+            clampNumber(saturationCenter + randomBetween(-Math.max(6, saturationVariance), Math.max(6, saturationVariance)), 0, 100),
+            randomBetween(24, 80)
+          );
+          if (!seen.has(filler)) {
+            generated.push(filler);
+            seen.add(filler);
+          }
         }
 
-        return unique.slice(0, count);
+        return generated.slice(0, count);
       }
 
-      function getKiewitPalette() {
-        // Lock Kiewit primaries and rotate only accent colors for brand-safe shuffle behavior.
-        const count = randomBetween(4, 6);
+      function getKiewitPalette(options) {
+        // Keep Kiewit primaries present while adapting accent generation to the selected influence controls.
+        const opts = options || {};
+        const count = clampPaletteCount(opts.count);
+        const baseColor = normalizeHex(opts.baseColor || state.paletteInfluence.baseColor);
+        const baseHsl = hexToHsl(baseColor);
+        const baseHue = baseHsl.h;
+        const saturationCenter = clampNumber(
+          typeof opts.saturation === "number" ? opts.saturation : state.paletteInfluence.saturation,
+          0,
+          100
+        );
+        const saturationVariance = saturationCenter <= 20 ? 4 : (saturationCenter <= 50 ? 8 : 12);
         const accentCount = Math.max(1, count - KIEWIT_PRIMARY_COLORS.length);
-        const accents = shuffleArray(KIEWIT_ACCENT_COLORS).slice(0, accentCount);
-        return shuffleArray(KIEWIT_PRIMARY_COLORS.concat(accents));
+
+        const accentPool = [];
+        const seen = new Set();
+        const addAccent = function (value) {
+          const normalized = normalizeHex(value);
+          if (!seen.has(normalized) && !KIEWIT_PRIMARY_COLORS.includes(normalized)) {
+            seen.add(normalized);
+            accentPool.push(normalized);
+          }
+        };
+
+        addAccent(hslToHex(baseHsl.h, saturationCenter, baseHsl.l));
+
+        const generatedOffsets = [0, 16, -16, 32, -32, 48];
+        generatedOffsets.forEach(function (offset) {
+          const accent = hslToHex(
+            wrapHue(baseHue + offset),
+            clampNumber(saturationCenter + randomBetween(-saturationVariance, saturationVariance), 0, 100),
+            randomBetween(24, 74)
+          );
+          addAccent(accent);
+        });
+
+        shuffleArray(KIEWIT_ACCENT_COLORS).forEach(function (accentHex) {
+          const accentHsl = hexToHsl(accentHex);
+          addAccent(hslToHex(
+            accentHsl.h,
+            clampNumber(saturationCenter + randomBetween(-Math.max(3, Math.floor(saturationVariance / 2)), Math.max(3, Math.floor(saturationVariance / 2))), 0, 100),
+            accentHsl.l
+          ));
+        });
+
+        while (accentPool.length < accentCount) {
+          addAccent(
+            hslToHex(
+              wrapHue(baseHue + randomBetween(-45, 45)),
+              clampNumber(saturationCenter + randomBetween(-Math.max(6, saturationVariance), Math.max(6, saturationVariance)), 0, 100),
+              randomBetween(24, 76)
+            )
+          );
+        }
+
+        const accents = accentPool.slice(0, accentCount);
+        return shuffleArray(KIEWIT_PRIMARY_COLORS.concat(accents)).slice(0, count);
       }
 
       function pickFontPair(currentFonts) {
@@ -1243,8 +1528,12 @@
         };
       }
 
-      function applySavedTheme() {
+      function applySavedSettings() {
         let savedTheme = "light";
+        let savedInfluence = {
+          baseColor: DEFAULT_PALETTE_INFLUENCE.baseColor,
+          saturation: DEFAULT_PALETTE_INFLUENCE.saturation
+        };
         try {
           const raw = localStorage.getItem(STORAGE_KEYS.settings);
           if (raw) {
@@ -1252,11 +1541,15 @@
             if (parsed && parsed.theme === "dark") {
               savedTheme = "dark";
             }
+            if (parsed && parsed.paletteInfluence) {
+              savedInfluence = sanitizePaletteInfluence(parsed.paletteInfluence, savedInfluence);
+            }
           }
         } catch (error) {
-          console.warn("Failed to parse theme settings:", error);
+          console.warn("Failed to parse settings:", error);
         }
 
+        state.paletteInfluence = savedInfluence;
         setTheme(savedTheme, false);
       }
 
@@ -1272,7 +1565,7 @@
         elements.themeToggle.setAttribute("aria-pressed", String(useDark));
 
         if (persist) {
-          localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify({ theme: useDark ? "dark" : "light" }));
+          persistSettings();
         }
       }
 
@@ -1289,6 +1582,29 @@
         elements.kiewitModeBtn.classList.toggle("active", enabled);
         elements.kiewitModeBtn.setAttribute("aria-pressed", String(enabled));
         elements.kiewitModeBtn.textContent = enabled ? "Kiewit Palette Mode: On" : "Kiewit Palette Mode: Off";
+      }
+
+      function updateInfluenceControls() {
+        elements.baseColorInput.value = normalizeHex(state.paletteInfluence.baseColor).toLowerCase();
+        elements.saturationInput.value = String(state.paletteInfluence.saturation);
+        elements.saturationOutput.textContent = state.paletteInfluence.saturation + "%";
+      }
+
+      function syncInfluenceFromPalette(palette) {
+        const influence = deriveInfluenceFromPalette(palette);
+        state.paletteInfluence.baseColor = influence.baseColor;
+        state.paletteInfluence.saturation = influence.saturation;
+      }
+
+      function persistSettings() {
+        const isDark = document.documentElement.classList.contains("theme-dark");
+        localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify({
+          theme: isDark ? "dark" : "light",
+          paletteInfluence: {
+            baseColor: state.paletteInfluence.baseColor,
+            saturation: state.paletteInfluence.saturation
+          }
+        }));
       }
 
       function persistFavorites() {
@@ -1332,6 +1648,62 @@
           r: (intVal >> 16) & 255,
           g: (intVal >> 8) & 255,
           b: intVal & 255
+        };
+      }
+
+      function hexToHsl(hex) {
+        const rgb = hexToRgb(hex);
+        const r = rgb.r / 255;
+        const g = rgb.g / 255;
+        const b = rgb.b / 255;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        const delta = max - min;
+        let h = 0;
+        let s = 0;
+        const l = (max + min) / 2;
+
+        if (delta !== 0) {
+          if (max === r) {
+            h = ((g - b) / delta) % 6;
+          } else if (max === g) {
+            h = (b - r) / delta + 2;
+          } else {
+            h = (r - g) / delta + 4;
+          }
+
+          s = delta / (1 - Math.abs(2 * l - 1));
+        }
+
+        return {
+          h: wrapHue(Math.round(h * 60)),
+          s: Math.round(s * 100),
+          l: Math.round(l * 100)
+        };
+      }
+
+      function deriveInfluenceFromPalette(palette) {
+        const baseColor = normalizeHex(Array.isArray(palette) && palette.length ? palette[0] : "#111827");
+        const saturation = clampNumber(hexToHsl(baseColor).s, 0, 100);
+        return {
+          baseColor: baseColor,
+          saturation: saturation
+        };
+      }
+
+      function sanitizePaletteInfluence(raw, fallback) {
+        const safeFallback = fallback || DEFAULT_PALETTE_INFLUENCE;
+        if (!raw || typeof raw !== "object") {
+          return {
+            baseColor: safeFallback.baseColor,
+            saturation: safeFallback.saturation
+          };
+        }
+
+        const hasValidColor = typeof raw.baseColor === "string" && /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(raw.baseColor);
+        return {
+          baseColor: hasValidColor ? normalizeHex(raw.baseColor) : safeFallback.baseColor,
+          saturation: clampNumber(Number(raw.saturation), 0, 100)
         };
       }
 
@@ -1391,6 +1763,18 @@
         return Math.floor(Math.random() * (max - min + 1)) + min;
       }
 
+      function clampNumber(value, min, max) {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+          return min;
+        }
+        return Math.min(max, Math.max(min, Math.round(numeric)));
+      }
+
+      function clampPaletteCount(value) {
+        return clampNumber(typeof value === "number" ? value : randomBetween(4, 6), 4, 6);
+      }
+
       function shuffleArray(values) {
         const copy = values.slice();
         for (let i = copy.length - 1; i > 0; i -= 1) {
@@ -1400,6 +1784,18 @@
           copy[j] = temp;
         }
         return copy;
+      }
+
+      function normalizeHex(value) {
+        const raw = String(value || "").trim();
+        const hex = raw.startsWith("#") ? raw : "#" + raw;
+        if (/^#[0-9a-fA-F]{3}$/.test(hex)) {
+          return ("#" + hex.slice(1).split("").map(function (char) { return char + char; }).join("")).toUpperCase();
+        }
+        if (/^#[0-9a-fA-F]{6}$/.test(hex)) {
+          return hex.toUpperCase();
+        }
+        return "#111827";
       }
 
       function quoteFamily(familyName) {
